@@ -4,8 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e0cdb154-a28b-4728-9247-f87b161012d1</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>Test\Tictactoe_test.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,12 +22,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Games\" />
+    <Folder Include="Test\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Games\Game.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Games\TicTacToe.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Test\Tictactoe_test.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

@@ -1,21 +1,53 @@
+import copy
+
 from Games.Game import Game
 
 class TicTacToe(Game):
 
-    def __init__(self):
-        self.board = [' ' for i in range(9)]
-
-    def score(self):
-        pass
+    def __init__(self, another=None):
+        if another == None:
+            self.board = [' ' for i in range(9)]
+            self.turn = 'X'
+        else:
+            self.board = copy.copy(another.board)
+            self.turn = another.turn
 
     def is_winner(self, player):
-        pass
+        if (self.board[0]==player and self.board[1]==player and self.board[2]==player): return True
+        if (self.board[3]==player and self.board[4]==player and self.board[5]==player): return True
+        if (self.board[6]==player and self.board[7]==player and self.board[8]==player): return True
+        if (self.board[0]==player and self.board[3]==player and self.board[6]==player): return True
+        if (self.board[1]==player and self.board[4]==player and self.board[7]==player): return True
+        if (self.board[2]==player and self.board[5]==player and self.board[8]==player): return True
+        if (self.board[0]==player and self.board[4]==player and self.board[8]==player): return True
+        if (self.board[2]==player and self.board[4]==player and self.board[6]==player): return True
+        return False
+
+    def score(self):
+        if self.is_winner('X'):
+            if self.turn('X'):
+                return 1
+            else:
+                return -1
+        if self.is_winner('O'):
+           if self.turn('O'):
+               return 1
+           else:
+              return -1
+        return 0
 
     def possible_moves(self):
-        pass
+        return [i for i in range(9) if self.board[i]==' ']
 
     def possible_states(self):
-        pass
+        return [make_move(move) for move in self.possible_moves()]
+
+    def make_move(self, move):
+        new_state = TicTacToe(self)
+        print(new_state)
+        new_state.board[move] = self.turn
+        new_state.turn = 'X' if self.turn == 'O' else 'O'
+        return new_state
 
     def __str__(self):
         string  = "   |   |   " + "\n"
@@ -32,6 +64,18 @@ class TicTacToe(Game):
         return string
 
     def __hash__(self):
-        pass
-        
+        hash = 0
+        for i in range(9):
+            if self.board[i]=='X':
+                hash += 1*(3**i)
+            elif self.board[i]=='O':
+                hash += 2*(3**i)
+        return hash
+
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            return False
+        return (self.board==other.board and self.turn==other.turn)
+    
+    
 
