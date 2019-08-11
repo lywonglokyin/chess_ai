@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e0cdb154-a28b-4728-9247-f87b161012d1</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Test\Tictactoe_test.py</StartupFile>
+    <StartupFile>Games\ChineseChess.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,9 +22,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Games\" />
+    <Folder Include="AI\" />
     <Folder Include="Test\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Games\ChineseChess.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Games\Game.py">
       <SubType>Code</SubType>
     </Compile>
