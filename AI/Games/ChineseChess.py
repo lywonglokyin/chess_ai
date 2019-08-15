@@ -67,26 +67,27 @@ class ChineseChess(Game):
                    Pieces.R_SOLDIER_3: ('e',4),
                    Pieces.R_SOLDIER_4: ('g',4),
                    Pieces.R_SOLDIER_5: ('i',4),
-                   Pieces.R_GENERAL: ('e',10),
-                   Pieces.R_ADVISOR_1: ('d',10),
-                   Pieces.R_ADVISOR_2: ('f',10),
-                   Pieces.R_ELEPHANT_1: ('c',10),
-                   Pieces.R_ELEPHANT_2: ('g',10),
-                   Pieces.R_HORSE_1: ('b',10),
-                   Pieces.R_HORSE_2: ('h',10),
-                   Pieces.R_CHARIOT_1: ('a',10),
-                   Pieces.R_CHARIOT_2: ('i',10),
-                   Pieces.R_CANNON_1: ('b',8),
-                   Pieces.R_CANNON_2: ('h',8),
-                   Pieces.R_SOLDIER_1: ('a',7),
-                   Pieces.R_SOLDIER_2: ('c',7),
-                   Pieces.R_SOLDIER_3: ('e',7),
-                   Pieces.R_SOLDIER_4: ('g',7),
-                   Pieces.R_SOLDIER_5: ('i',7)}
+                   Pieces.B_GENERAL: ('e',10),
+                   Pieces.B_ADVISOR_1: ('d',10),
+                   Pieces.B_ADVISOR_2: ('f',10),
+                   Pieces.B_ELEPHANT_1: ('c',10),
+                   Pieces.B_ELEPHANT_2: ('g',10),
+                   Pieces.B_HORSE_1: ('b',10),
+                   Pieces.B_HORSE_2: ('h',10),
+                   Pieces.B_CHARIOT_1: ('a',10),
+                   Pieces.B_CHARIOT_2: ('i',10),
+                   Pieces.B_CANNON_1: ('b',8),
+                   Pieces.B_CANNON_2: ('h',8),
+                   Pieces.B_SOLDIER_1: ('a',7),
+                   Pieces.B_SOLDIER_2: ('c',7),
+                   Pieces.B_SOLDIER_3: ('e',7),
+                   Pieces.B_SOLDIER_4: ('g',7),
+                   Pieces.B_SOLDIER_5: ('i',7),}
 
     def __init__(self):
         self.board = ChineseChess.default_board
         self.pos = ChineseChess.default_pos
+        self.turn = 'R'
 
     def __enum_to_str(self, code):
 
@@ -145,15 +146,64 @@ class ChineseChess(Game):
         self.set_board(move[0], None)
         self.set_board(move[1], piece_from)
         self.pos[piece_from] = move[1]
-        if piece_to == None:
+        if piece_to != None:
             self.pos[piece_to] = None
+        self.turn = 'R' if self.turn=='B' else 'B'
 
+
+    def __possible_soldier_moves(self, turn):
+        moves = []
+        if turn=='R':
+            for piece in [self.Pieces.R_SOLDIER_1, self.Pieces.R_SOLDIER_2,self.Pieces.R_SOLDIER_3,self.Pieces.R_SOLDIER_4,self.Pieces.R_SOLDIER_5]:
+                piece_pos = self.pos[piece]
+                if piece_pos == None: #dead piece
+                    continue
+                #forward movement
+                if piece_pos[1]!=10: #not at top line
+                    moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+1)) )
+                #side movement
+                if piece_pos[1]>=6: #passed the river
+                    #left
+                    if piece_pos[0]!='a':
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])-1), piece_pos[1])) )
+                    #right
+                    if piece_pos[0]!='i':
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
+        if turn=='B':
+            for piece in [self.Pieces.B_SOLDIER_1, self.Pieces.B_SOLDIER_2,self.Pieces.B_SOLDIER_3,self.Pieces.B_SOLDIER_4,self.Pieces.B_SOLDIER_5]:
+                piece_pos = self.pos[piece]
+                if piece_pos == None: #dead piece
+                    continue
+                #forward movement
+                if piece_pos[1]!=1: #not at bottom line
+                    moves.append( (piece_pos, (piece_pos[0], piece_pos[1]-1)) )
+                #side movement
+                if piece_pos[1]<=5: #passed the river
+                    #left
+                    if piece_pos[0]!='a':
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])-1), piece_pos[1])) )
+                    #right
+                    if piece_pos[0]!='i':
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
+        return moves
+
+    def possible_moves(self):
+        moves = []
+
+        moves.extend(self.__possible_soldier_moves(self.turn))
+        return moves
 
 if __name__ == '__main__':
     new_chess = ChineseChess()
-    new_chess.make_move((('a',7),('a',6)))
+    new_chess.make_move((('e',4),('e',5)))
     print(new_chess)
-    new_chess.make_move((('a',4),('a',5)))
+    print(new_chess.possible_moves())
+    new_chess.make_move((('e',7),('e',6)))
     print(new_chess)
-    new_chess.make_move((('a',6),('a',5)))
+    print(new_chess.possible_moves())
+    new_chess.make_move((('e',5),('e',6)))
     print(new_chess)
+    print(new_chess.possible_moves())
+    new_chess.make_move((('c',7),('c',6)))
+    print(new_chess)
+    print(new_chess.possible_moves())
