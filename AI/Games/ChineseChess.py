@@ -150,10 +150,18 @@ class ChineseChess(Game):
             self.pos[piece_to] = None
         self.turn = 'R' if self.turn=='B' else 'B'
 
+    def get_side(self, piece):
+        if piece == None:
+            return None
+        if piece in [self.Pieces.R_GENERAL, self.Pieces.R_ADVISOR_1,self.Pieces.R_ADVISOR_2,self.Pieces.R_ELEPHANT_1,self.Pieces.R_ELEPHANT_2,self.Pieces.R_HORSE_1, self.Pieces.R_HORSE_2,self.Pieces.R_CHARIOT_1,self.Pieces.R_CHARIOT_2,  self.Pieces.R_CANNON_1,  self.Pieces.R_CANNON_2, self.Pieces.R_SOLDIER_1, self.Pieces.R_SOLDIER_2,  self.Pieces.R_SOLDIER_3,  self.Pieces.R_SOLDIER_4,  self.Pieces.R_SOLDIER_5]:
+            return 'R'
+        else:
+            return 'B'
 
-    def __possible_soldier_moves(self, turn):
+
+    def __possible_soldier_moves(self):
         moves = []
-        if turn=='R':
+        if self.turn=='R':
             for piece in [self.Pieces.R_SOLDIER_1, self.Pieces.R_SOLDIER_2,self.Pieces.R_SOLDIER_3,self.Pieces.R_SOLDIER_4,self.Pieces.R_SOLDIER_5]:
                 piece_pos = self.pos[piece]
                 if piece_pos == None: #dead piece
@@ -169,7 +177,7 @@ class ChineseChess(Game):
                     #right
                     if piece_pos[0]!='i':
                         moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
-        if turn=='B':
+        if self.turn=='B':
             for piece in [self.Pieces.B_SOLDIER_1, self.Pieces.B_SOLDIER_2,self.Pieces.B_SOLDIER_3,self.Pieces.B_SOLDIER_4,self.Pieces.B_SOLDIER_5]:
                 piece_pos = self.pos[piece]
                 if piece_pos == None: #dead piece
@@ -187,15 +195,80 @@ class ChineseChess(Game):
                         moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
         return moves
 
+    def __possible_cannon_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_CANNON_1, self.Pieces.R_CANNON_2]
+        else:
+            pieces = [self.Pieces.B_CANNON_1, self.Pieces.B_CANNON_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #left and right
+            directions = [-1, 1]
+            for d in directions:
+                i = 0
+                platform = False
+                while True:
+                    i+=1
+                    if (ord(piece_pos[0])+d*i>ord('i')) or (ord(piece_pos[0])+d*i<ord('a')): #out of bound
+                        break
+                    if not platform:
+                        if self.get_piece((chr(ord(piece_pos[0])+d*i), piece_pos[1]))==None: #empty space for movement
+                            moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                            continue
+                        else: #occupied space
+                            platform = True
+                            continue
+                    else: #have piece in middle
+                        target = self.get_piece((chr(ord(piece_pos[0])+d*i), piece_pos[1]))
+                        if target == None:
+                            continue
+                        if self.get_side(target)!=self.turn:
+                            moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                            break
+                        else:
+                            break
+            #up and down
+            for d in directions:
+                i = 0
+                platform = False
+                while True:
+                    i+=1
+                    if (piece_pos[1]+i*d>10) or (piece_pos[1]+i*d<1): #out of bound
+                        break
+                    if not platform:
+                        if self.get_piece((piece_pos[0], piece_pos[1]+i*d))==None: #empty space for movement
+                            moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                            continue
+                        else: #occupied space
+                            platform = True
+                            continue
+                    else: #have piece in middle
+                        target = self.get_piece((piece_pos[0], piece_pos[1]+i*d))
+                        if target == None:
+                            continue
+                        if self.get_side(target)!=self.turn:
+                            moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                            break
+                        else:
+                            break
+        return moves
+
     def possible_moves(self):
         moves = []
 
-        moves.extend(self.__possible_soldier_moves(self.turn))
+        #!!! moves.extend(self.__possible_soldier_moves())
+        moves.extend(self.__possible_cannon_moves())
         return moves
 
 if __name__ == '__main__':
     new_chess = ChineseChess()
-    new_chess.make_move((('e',4),('e',5)))
+    new_chess.make_move((('h',3),('e',3)))
     print(new_chess)
     print(new_chess.possible_moves())
     new_chess.make_move((('e',7),('e',6)))
