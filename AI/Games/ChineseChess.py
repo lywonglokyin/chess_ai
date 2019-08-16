@@ -67,26 +67,27 @@ class ChineseChess(Game):
                    Pieces.R_SOLDIER_3: ('e',4),
                    Pieces.R_SOLDIER_4: ('g',4),
                    Pieces.R_SOLDIER_5: ('i',4),
-                   Pieces.R_GENERAL: ('e',10),
-                   Pieces.R_ADVISOR_1: ('d',10),
-                   Pieces.R_ADVISOR_2: ('f',10),
-                   Pieces.R_ELEPHANT_1: ('c',10),
-                   Pieces.R_ELEPHANT_2: ('g',10),
-                   Pieces.R_HORSE_1: ('b',10),
-                   Pieces.R_HORSE_2: ('h',10),
-                   Pieces.R_CHARIOT_1: ('a',10),
-                   Pieces.R_CHARIOT_2: ('i',10),
-                   Pieces.R_CANNON_1: ('b',8),
-                   Pieces.R_CANNON_2: ('h',8),
-                   Pieces.R_SOLDIER_1: ('a',7),
-                   Pieces.R_SOLDIER_2: ('c',7),
-                   Pieces.R_SOLDIER_3: ('e',7),
-                   Pieces.R_SOLDIER_4: ('g',7),
-                   Pieces.R_SOLDIER_5: ('i',7)}
+                   Pieces.B_GENERAL: ('e',10),
+                   Pieces.B_ADVISOR_1: ('d',10),
+                   Pieces.B_ADVISOR_2: ('f',10),
+                   Pieces.B_ELEPHANT_1: ('c',10),
+                   Pieces.B_ELEPHANT_2: ('g',10),
+                   Pieces.B_HORSE_1: ('b',10),
+                   Pieces.B_HORSE_2: ('h',10),
+                   Pieces.B_CHARIOT_1: ('a',10),
+                   Pieces.B_CHARIOT_2: ('i',10),
+                   Pieces.B_CANNON_1: ('b',8),
+                   Pieces.B_CANNON_2: ('h',8),
+                   Pieces.B_SOLDIER_1: ('a',7),
+                   Pieces.B_SOLDIER_2: ('c',7),
+                   Pieces.B_SOLDIER_3: ('e',7),
+                   Pieces.B_SOLDIER_4: ('g',7),
+                   Pieces.B_SOLDIER_5: ('i',7),}
 
     def __init__(self):
         self.board = ChineseChess.default_board
         self.pos = ChineseChess.default_pos
+        self.turn = 'R'
 
     def __enum_to_str(self, code):
 
@@ -145,15 +146,360 @@ class ChineseChess(Game):
         self.set_board(move[0], None)
         self.set_board(move[1], piece_from)
         self.pos[piece_from] = move[1]
-        if piece_to == None:
+        if piece_to != None:
             self.pos[piece_to] = None
+        self.turn = 'R' if self.turn=='B' else 'B'
 
+    def get_side(self, piece):
+        if piece == None:
+            return None
+        if piece in [self.Pieces.R_GENERAL, self.Pieces.R_ADVISOR_1,self.Pieces.R_ADVISOR_2,self.Pieces.R_ELEPHANT_1,self.Pieces.R_ELEPHANT_2,self.Pieces.R_HORSE_1, self.Pieces.R_HORSE_2,self.Pieces.R_CHARIOT_1,self.Pieces.R_CHARIOT_2,  self.Pieces.R_CANNON_1,  self.Pieces.R_CANNON_2, self.Pieces.R_SOLDIER_1, self.Pieces.R_SOLDIER_2,  self.Pieces.R_SOLDIER_3,  self.Pieces.R_SOLDIER_4,  self.Pieces.R_SOLDIER_5]:
+            return 'R'
+        else:
+            return 'B'
+
+    # same_side is a helper function that returns true if the piece in pos is on the same side of the current turn. Return false if no piece in pos.
+    def same_side(self, pos):
+        return self.get_side(self.get_piece(pos))==self.turn
+
+    # out_of_bound is a helper function that return true if pos is out of the board
+    def out_of_bound(self, pos):
+        if (ord(pos[0])<ord('a')) or (ord(pos[0])>ord('i')):
+            return True
+        if (pos[1]<1) or (pos[1]>10):
+            return True
+        return False
+
+    def __possible_soldier_moves(self):
+        moves = []
+        if self.turn=='R':
+            for piece in [self.Pieces.R_SOLDIER_1, self.Pieces.R_SOLDIER_2,self.Pieces.R_SOLDIER_3,self.Pieces.R_SOLDIER_4,self.Pieces.R_SOLDIER_5]:
+                piece_pos = self.pos[piece]
+                if piece_pos == None: #dead piece
+                    continue
+                #forward movement
+                if (piece_pos[1]!=10) and (not self.same_side(  (piece_pos[0], piece_pos[1]+1) ) ): #not at top line and not friendly in front
+                    moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+1)) )
+                #side movement
+                if piece_pos[1]>=6: #passed the river
+                    #left
+                    if (piece_pos[0]!='a') and (not self.same_side( (chr(ord(piece_pos[0])-1), piece_pos[1]) ) ):
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])-1), piece_pos[1])) )
+                    #right
+                    if (piece_pos[0]!='i') and (not self.same_side( (chr(ord(piece_pos[0])+1), piece_pos[1]) ) ):
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
+        if self.turn=='B':
+            for piece in [self.Pieces.B_SOLDIER_1, self.Pieces.B_SOLDIER_2,self.Pieces.B_SOLDIER_3,self.Pieces.B_SOLDIER_4,self.Pieces.B_SOLDIER_5]:
+                piece_pos = self.pos[piece]
+                if piece_pos == None: #dead piece
+                    continue
+                #forward movement
+                if (piece_pos[1]!=1) and (not self.same_side( (piece_pos[0], piece_pos[1]-1) )): #not at bottom line
+                    moves.append( (piece_pos, (piece_pos[0], piece_pos[1]-1)) )
+                #side movement
+                if piece_pos[1]<=5: #passed the river
+                    #left
+                    if (piece_pos[0]!='a') and (not self.same_side( (chr(ord(piece_pos[0])-1), piece_pos[1]) )):
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])-1), piece_pos[1])) )
+                    #right
+                    if (piece_pos[0]!='i') and (not self.same_side( (chr(ord(piece_pos[0])+1), piece_pos[1]) )):
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
+        return moves
+
+    def __possible_cannon_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_CANNON_1, self.Pieces.R_CANNON_2]
+        else:
+            pieces = [self.Pieces.B_CANNON_1, self.Pieces.B_CANNON_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #left and right
+            directions = [-1, 1]
+            for d in directions:
+                i = 0
+                platform = False
+                while True:
+                    i+=1
+                    if (ord(piece_pos[0])+d*i>ord('i')) or (ord(piece_pos[0])+d*i<ord('a')): #out of bound
+                        break
+                    if not platform:
+                        if self.get_piece((chr(ord(piece_pos[0])+d*i), piece_pos[1]))==None: #empty space for movement
+                            moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                            continue
+                        else: #occupied space
+                            platform = True
+                            continue
+                    else: #have piece in middle
+                        target = self.get_piece((chr(ord(piece_pos[0])+d*i), piece_pos[1]))
+                        if target == None:
+                            continue
+                        if self.get_side(target)!=self.turn:
+                            moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                            break
+                        else:
+                            break
+            #up and down
+            for d in directions:
+                i = 0
+                platform = False
+                while True:
+                    i+=1
+                    if (piece_pos[1]+i*d>10) or (piece_pos[1]+i*d<1): #out of bound
+                        break
+                    if not platform:
+                        if self.get_piece((piece_pos[0], piece_pos[1]+i*d))==None: #empty space for movement
+                            moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                            continue
+                        else: #occupied space
+                            platform = True
+                            continue
+                    else: #have piece in middle
+                        target = self.get_piece((piece_pos[0], piece_pos[1]+i*d))
+                        if target == None:
+                            continue
+                        if self.get_side(target)!=self.turn:
+                            moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                            break
+                        else:
+                            break
+        return moves
+
+    def __possible_chariot_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_CHARIOT_1, self.Pieces.R_CHARIOT_2]
+        else:
+            pieces = [self.Pieces.B_CHARIOT_1, self.Pieces.B_CHARIOT_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #left and right
+            directions = [-1, 1]
+            for d in directions:
+                i = 0
+                while True:
+                    i+=1
+                    if (ord(piece_pos[0])+d*i>ord('i')) or (ord(piece_pos[0])+d*i<ord('a')): #out of bound
+                        break
+                    if self.get_piece((chr(ord(piece_pos[0])+d*i), piece_pos[1]))==None: #empty space for movement
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                        continue
+                    else: #occupied space
+                        if not self.same_side((chr(ord(piece_pos[0])+d*i), piece_pos[1])):
+                            moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                        break
+
+            #up and down
+            for d in directions:
+                i = 0
+                platform = False
+                while True:
+                    i+=1
+                    if (piece_pos[1]+i*d>10) or (piece_pos[1]+i*d<1): #out of bound
+                        break
+                    if self.get_piece((piece_pos[0], piece_pos[1]+i*d))==None: #empty space for movement
+                        moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                        continue
+                    else: #occupied space
+                        if not self.same_side((piece_pos[0], piece_pos[1]+i*d)):
+                            moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                        break
+                    
+        return moves
+
+    def __possible_horse_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_HORSE_1, self.Pieces.R_HORSE_2]
+        else:
+            pieces = [self.Pieces.B_HORSE_1, self.Pieces.B_HORSE_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #up
+            block = (piece_pos[0], piece_pos[1]+1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            #down
+            block = (piece_pos[0], piece_pos[1]-1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+
+            #left
+            block = (chr(ord(piece_pos[0])-1), piece_pos[1])
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]+1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]-1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            #right
+            block = (chr(ord(piece_pos[0])+1), piece_pos[1])
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]+1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]-1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+        return moves
+
+    def __possbiel_elephant_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_ELEPHANT_1, self.Pieces.R_ELEPHANT_2]
+        else:
+            pieces = [self.Pieces.B_ELEPHANT_1, self.Pieces.B_ELEPHANT_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #up
+            if (self.turn=='R') and (piece_pos[1]==5): #elephant cant cross river
+                continue
+            block = (chr(ord(piece_pos[0])-1), piece_pos[1]+1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            block = (chr(ord(piece_pos[0])+1), piece_pos[1]+1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+
+            #down
+            if (self.turn=='B') and (piece_pos[1]==6): #elephant cant cross river
+                continue
+            block = (chr(ord(piece_pos[0])-1), piece_pos[1]-1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            block = (chr(ord(piece_pos[0])+1), piece_pos[1]-1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+        return moves
+
+    def __possible_advisor_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_ADVISOR_1, self.Pieces.R_ADVISOR_2]
+        else:
+            pieces = [self.Pieces.B_ADVISOR_1, self.Pieces.B_ADVISOR_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #up
+            if (self.turn=='R' and (not piece_pos[1]==3)) or (self.turn=="B" and (not piece_pos[1]==10)):
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]+1)
+                if (not ord(target[0])<ord('d')) and  (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]+1)
+                if (not ord(target[0])>ord('f')) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            #down
+            if (self.turn=='R' and (not piece_pos[1]==1)) or (self.turn=="B" and (not piece_pos[1]==8)):
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]-1)
+                if (not ord(target[0])<ord('d')) and  (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]-1)
+                if (not ord(target[0])>ord('f')) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+        return moves
+    
+    def __possible_general_moves(self):
+        moves = []
+        if self.turn == 'R':
+            piece = self.Pieces.R_GENERAL
+        else:
+            piece = self.Pieces.B_GENERAL
+        piece_pos = self.pos[piece]
+        #up
+        if (self.turn=='R' and (not piece_pos[1]==3)) or (self.turn=="B" and (not piece_pos[1]==10)):
+            target = (piece_pos[0], piece_pos[1]+1)
+            if (not self.same_side(target)):
+                moves.append( (piece_pos, target) )
+        #left
+        if not ord(piece_pos[0])==ord('d'):
+            target = (chr(ord(piece_pos[0])-1), piece_pos[1])
+            if (not self.same_side(target)):
+                moves.append( (piece_pos, target) )
+        #right
+        if not ord(piece_pos[0])==ord('f'):
+            target = (chr(ord(piece_pos[0])+1), piece_pos[1])
+            if (not self.same_side(target)):
+                moves.append( (piece_pos, target) )
+        #down
+        if (self.turn=='R' and (not piece_pos[1]==1)) or (self.turn=="B" and (not piece_pos[1]==8)):
+            target = (piece_pos[0], piece_pos[1]-1)
+            if (not self.same_side(target)):
+                moves.append( (piece_pos, target) )
+        #special move
+        if self.pos[self.Pieces.R_GENERAL][0] == self.pos[self.Pieces.B_GENERAL][0]:
+            pieces_between = False
+            for x in range(self.pos[self.Pieces.R_GENERAL][1]+1,self.pos[self.Pieces.B_GENERAL][1] ):
+                if self.get_piece((piece_pos[0],x))!=None:
+                   pieces_between = True
+                   break
+            if not pieces_between:
+                if self.turn == "R":
+                    moves.append( (piece_pos, self.pos[self.Pieces.B_GENERAL]) )
+                else:
+                    moves.append( (piece_pos, self.pos[self.Pieces.R_GENERAL]) )
+        return moves
+
+    def possible_moves(self):
+        moves = []
+
+        moves.extend(self.__possible_soldier_moves())
+        moves.extend(self.__possible_cannon_moves())
+        moves.extend(self.__possible_chariot_moves())
+        moves.extend(self.__possible_horse_moves())
+        moves.extend(self.__possbiel_elephant_moves())
+        moves.extend(self.__possible_advisor_moves())
+        moves.extend(self.__possible_general_moves())
+        return moves
 
 if __name__ == '__main__':
     new_chess = ChineseChess()
-    new_chess.make_move((('a',7),('a',6)))
+    new_chess.board[6][4] = None
+    new_chess.make_move((('b',1),('c',3)))
     print(new_chess)
-    new_chess.make_move((('a',4),('a',5)))
-    print(new_chess)
-    new_chess.make_move((('a',6),('a',5)))
-    print(new_chess)
+    print(new_chess.possible_moves())
+    print(len(new_chess.possible_moves()))
+
