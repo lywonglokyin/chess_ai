@@ -369,6 +369,49 @@ class ChineseChess(Game):
                     moves.append( (piece_pos, target) )
         return moves
 
+    def __possbiel_elephant_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_ELEPHANT_1, self.Pieces.R_ELEPHANT_2]
+        else:
+            pieces = [self.Pieces.B_ELEPHANT_1, self.Pieces.B_ELEPHANT_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #up
+            if (self.turn=='R') and (piece_pos[1]==5): #elephant cant cross river
+                continue
+            block = (chr(ord(piece_pos[0])-1), piece_pos[1]+1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            block = (chr(ord(piece_pos[0])+1), piece_pos[1]+1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+
+            #down
+            if (self.turn=='B') and (piece_pos[1]==6): #elephant cant cross river
+                continue
+            block = (chr(ord(piece_pos[0])-1), piece_pos[1]-1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            block = (chr(ord(piece_pos[0])+1), piece_pos[1]-1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+        return moves
+
+    
     def possible_moves(self):
         moves = []
 
@@ -376,6 +419,7 @@ class ChineseChess(Game):
         #!!! moves.extend(self.__possible_cannon_moves())
         #!!! moves.extend(self.__possible_chariot_moves())
         #!!! moves.extend(self.__possible_horse_moves())
+        moves.extend(self.__possbiel_elephant_moves())
         return moves
 
 if __name__ == '__main__':
