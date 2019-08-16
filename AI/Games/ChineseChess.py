@@ -162,6 +162,14 @@ class ChineseChess(Game):
     def same_side(self, pos):
         return self.get_side(self.get_piece(pos))==self.turn
 
+    # out_of_bound is a helper function that return true if pos is out of the board
+    def out_of_bound(self, pos):
+        if (ord(pos[0])<ord('a')) or (ord(pos[0])>ord('i')):
+            return True
+        if (pos[1]<1) or (pos[1]>10):
+            return True
+        return False
+
     def __possible_soldier_moves(self):
         moves = []
         if self.turn=='R':
@@ -309,32 +317,84 @@ class ChineseChess(Game):
                     
         return moves
 
+    def __possible_horse_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_HORSE_1, self.Pieces.R_HORSE_2]
+        else:
+            pieces = [self.Pieces.B_HORSE_1, self.Pieces.B_HORSE_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #up
+            block = (piece_pos[0], piece_pos[1]+1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]+2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            #down
+            block = (piece_pos[0], piece_pos[1]-1)
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]-2)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+
+            #left
+            block = (chr(ord(piece_pos[0])-1), piece_pos[1])
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]+1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])-2), piece_pos[1]-1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            #right
+            block = (chr(ord(piece_pos[0])+1), piece_pos[1])
+            if (not self.out_of_bound(block)) and (self.get_piece(block)==None): # no blocking
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]+1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+2), piece_pos[1]-1)
+                if (not self.out_of_bound(target)) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+        return moves
 
     def possible_moves(self):
         moves = []
 
         #!!! moves.extend(self.__possible_soldier_moves())
         #!!! moves.extend(self.__possible_cannon_moves())
-        moves.extend(self.__possible_chariot_moves())
+        #!!! moves.extend(self.__possible_chariot_moves())
+        #!!! moves.extend(self.__possible_horse_moves())
         return moves
 
 if __name__ == '__main__':
     new_chess = ChineseChess()
-    new_chess.make_move((('h',3),('e',3)))
+    new_chess.make_move((('h',1),('g',3)))
     print(new_chess)
     print(new_chess.possible_moves())
-    new_chess.make_move((('e',7),('e',6)))
-    print(new_chess)
-    print(new_chess.possible_moves())
-    new_chess.make_move((('e',3),('e',6)))
-    print(new_chess)
-    print(new_chess.possible_moves())
-    new_chess.make_move((('c',7),('c',6)))
+    new_chess.make_move((('g',7),('g',6)))
     print(new_chess)
     print(new_chess.possible_moves())
     new_chess.make_move((('a',1),('a',2)))
     print(new_chess)
     print(new_chess.possible_moves())
-    new_chess.make_move((('g',7),('g',6)))
+    new_chess.make_move((('g',6),('g',5)))
+    print(new_chess)
+    print(new_chess.possible_moves())
+    new_chess.make_move((('a',2),('b',2)))
+    print(new_chess)
+    print(new_chess.possible_moves())
+    new_chess.make_move((('g',5),('g',4)))
     print(new_chess)
     print(new_chess.possible_moves())
