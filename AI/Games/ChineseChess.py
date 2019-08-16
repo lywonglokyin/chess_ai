@@ -158,6 +158,9 @@ class ChineseChess(Game):
         else:
             return 'B'
 
+    # same_side is a helper function that returns true if the piece in pos is on the same side of the current turn. Return false if no piece in pos.
+    def same_side(self, pos):
+        return self.get_side(self.get_piece(pos))==self.turn
 
     def __possible_soldier_moves(self):
         moves = []
@@ -167,15 +170,15 @@ class ChineseChess(Game):
                 if piece_pos == None: #dead piece
                     continue
                 #forward movement
-                if piece_pos[1]!=10: #not at top line
+                if (piece_pos[1]!=10) and (not self.same_side(  (piece_pos[0], piece_pos[1]+1) ) ): #not at top line and not friendly in front
                     moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+1)) )
                 #side movement
                 if piece_pos[1]>=6: #passed the river
                     #left
-                    if piece_pos[0]!='a':
+                    if (piece_pos[0]!='a') and (not self.same_side( (chr(ord(piece_pos[0])-1), piece_pos[1]) ) ):
                         moves.append( (piece_pos, (chr(ord(piece_pos[0])-1), piece_pos[1])) )
                     #right
-                    if piece_pos[0]!='i':
+                    if (piece_pos[0]!='i') and (not self.same_side( (chr(ord(piece_pos[0])+1), piece_pos[1]) ) ):
                         moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
         if self.turn=='B':
             for piece in [self.Pieces.B_SOLDIER_1, self.Pieces.B_SOLDIER_2,self.Pieces.B_SOLDIER_3,self.Pieces.B_SOLDIER_4,self.Pieces.B_SOLDIER_5]:
@@ -183,15 +186,15 @@ class ChineseChess(Game):
                 if piece_pos == None: #dead piece
                     continue
                 #forward movement
-                if piece_pos[1]!=1: #not at bottom line
+                if (piece_pos[1]!=1) and (not self.same_side( (piece_pos[0], piece_pos[1]-1) )): #not at bottom line
                     moves.append( (piece_pos, (piece_pos[0], piece_pos[1]-1)) )
                 #side movement
                 if piece_pos[1]<=5: #passed the river
                     #left
-                    if piece_pos[0]!='a':
+                    if (piece_pos[0]!='a') and (not self.same_side( (chr(ord(piece_pos[0])-1), piece_pos[1]) )):
                         moves.append( (piece_pos, (chr(ord(piece_pos[0])-1), piece_pos[1])) )
                     #right
-                    if piece_pos[0]!='i':
+                    if (piece_pos[0]!='i') and (not self.same_side( (chr(ord(piece_pos[0])+1), piece_pos[1]) )):
                         moves.append( (piece_pos, (chr(ord(piece_pos[0])+1), piece_pos[1])) )
         return moves
 
@@ -259,11 +262,60 @@ class ChineseChess(Game):
                             break
         return moves
 
+    def __possible_chariot_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_CHARIOT_1, self.Pieces.R_CHARIOT_2]
+        else:
+            pieces = [self.Pieces.B_CHARIOT_1, self.Pieces.B_CHARIOT_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #left and right
+            directions = [-1, 1]
+            for d in directions:
+                i = 0
+                while True:
+                    i+=1
+                    if (ord(piece_pos[0])+d*i>ord('i')) or (ord(piece_pos[0])+d*i<ord('a')): #out of bound
+                        break
+                    if self.get_piece((chr(ord(piece_pos[0])+d*i), piece_pos[1]))==None: #empty space for movement
+                        moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                        continue
+                    else: #occupied space
+                        if not self.same_side((chr(ord(piece_pos[0])+d*i), piece_pos[1])):
+                            moves.append( (piece_pos, (chr(ord(piece_pos[0])+d*i), piece_pos[1])) )
+                        break
+
+            #up and down
+            for d in directions:
+                i = 0
+                platform = False
+                while True:
+                    i+=1
+                    if (piece_pos[1]+i*d>10) or (piece_pos[1]+i*d<1): #out of bound
+                        break
+                    if self.get_piece((piece_pos[0], piece_pos[1]+i*d))==None: #empty space for movement
+                        moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                        continue
+                    else: #occupied space
+                        if not self.same_side((piece_pos[0], piece_pos[1]+i*d)):
+                            moves.append( (piece_pos, (piece_pos[0], piece_pos[1]+i*d)) )
+                        break
+                    
+        return moves
+
+
     def possible_moves(self):
         moves = []
 
         #!!! moves.extend(self.__possible_soldier_moves())
-        moves.extend(self.__possible_cannon_moves())
+        #!!! moves.extend(self.__possible_cannon_moves())
+        moves.extend(self.__possible_chariot_moves())
         return moves
 
 if __name__ == '__main__':
@@ -274,9 +326,15 @@ if __name__ == '__main__':
     new_chess.make_move((('e',7),('e',6)))
     print(new_chess)
     print(new_chess.possible_moves())
-    new_chess.make_move((('e',5),('e',6)))
+    new_chess.make_move((('e',3),('e',6)))
     print(new_chess)
     print(new_chess.possible_moves())
     new_chess.make_move((('c',7),('c',6)))
+    print(new_chess)
+    print(new_chess.possible_moves())
+    new_chess.make_move((('a',1),('a',2)))
+    print(new_chess)
+    print(new_chess.possible_moves())
+    new_chess.make_move((('g',7),('g',6)))
     print(new_chess)
     print(new_chess.possible_moves())
