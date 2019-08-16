@@ -411,6 +411,36 @@ class ChineseChess(Game):
                     moves.append( (piece_pos, target) )
         return moves
 
+    def __possible_advisor_moves(self):
+        moves = []
+
+        pieces = []
+        if self.turn == 'R':
+            pieces = [self.Pieces.R_ADVISOR_1, self.Pieces.R_ADVISOR_2]
+        else:
+            pieces = [self.Pieces.B_ADVISOR_1, self.Pieces.B_ADVISOR_2]
+
+        for piece in pieces:
+            piece_pos = self.pos[piece]
+            if piece_pos==None: #dead piece
+                continue
+            #up
+            if not ((piece_pos[1]+1)>10):
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]+1)
+                if (not ord(target[0])<ord('d')) and  (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]+1)
+                if (not ord(target[0])>ord('f')) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+            #down
+            if not ((piece_pos[1]-1)<1):
+                target = (chr(ord(piece_pos[0])-1), piece_pos[1]-1)
+                if (not ord(target[0])<ord('d')) and  (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+                target = (chr(ord(piece_pos[0])+1), piece_pos[1]-1)
+                if (not ord(target[0])>ord('f')) and (not self.same_side(target)):
+                    moves.append( (piece_pos, target) )
+        return moves
     
     def possible_moves(self):
         moves = []
@@ -419,26 +449,16 @@ class ChineseChess(Game):
         #!!! moves.extend(self.__possible_cannon_moves())
         #!!! moves.extend(self.__possible_chariot_moves())
         #!!! moves.extend(self.__possible_horse_moves())
-        moves.extend(self.__possbiel_elephant_moves())
+        #!!! moves.extend(self.__possbiel_elephant_moves())
+        #!!! moves.extend(self.__possible_advisor_moves())
         return moves
 
 if __name__ == '__main__':
     new_chess = ChineseChess()
-    new_chess.make_move((('h',1),('g',3)))
+    new_chess.make_move((('d',1),('e',2)))
     print(new_chess)
     print(new_chess.possible_moves())
     new_chess.make_move((('g',7),('g',6)))
     print(new_chess)
     print(new_chess.possible_moves())
-    new_chess.make_move((('a',1),('a',2)))
-    print(new_chess)
-    print(new_chess.possible_moves())
-    new_chess.make_move((('g',6),('g',5)))
-    print(new_chess)
-    print(new_chess.possible_moves())
-    new_chess.make_move((('a',2),('b',2)))
-    print(new_chess)
-    print(new_chess.possible_moves())
-    new_chess.make_move((('g',5),('g',4)))
-    print(new_chess)
-    print(new_chess.possible_moves())
+
