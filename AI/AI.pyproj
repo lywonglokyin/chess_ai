@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e0cdb154-a28b-4728-9247-f87b161012d1</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Games\ChineseChess.py</StartupFile>
+    <StartupFile>Games\main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -30,6 +30,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Games\Game.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Games\main.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Games\MonteCarlo.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Games\TicTacToe.py">

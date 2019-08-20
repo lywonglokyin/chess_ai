@@ -43,7 +43,7 @@ class ChineseChess(Game):
 
     default_board = [[Pieces.B_CHARIOT_1, Pieces.B_HORSE_1, Pieces.B_ELEPHANT_1, Pieces.B_ADVISOR_1, Pieces.B_GENERAL, Pieces.B_ADVISOR_2, Pieces.B_ELEPHANT_2, Pieces.B_HORSE_2, Pieces.B_CHARIOT_2],
                      [None,None,None,None,None,None,None,None,None],
-                     [None,Pieces.B_CANNON_1,None,None,None,None,None,Pieces.B_CANNON_1,None],
+                     [None,Pieces.B_CANNON_1,None,None,None,None,None,Pieces.B_CANNON_2,None],
                      [Pieces.B_SOLDIER_1,None,Pieces.B_SOLDIER_2,None,Pieces.B_SOLDIER_3,None,Pieces.B_SOLDIER_4,None,Pieces.B_SOLDIER_5],
                      [None,None,None,None,None,None,None,None,None],
                      [None,None,None,None,None,None,None,None,None],
@@ -153,6 +153,8 @@ class ChineseChess(Game):
         piece_from = self.get_piece(move[0])
         piece_to = self.get_piece(move[1])
 
+        if piece_from is None:
+            raise Exception
         self.set_board(move[0], None)
         self.set_board(move[1], piece_from)
         self.pos[piece_from] = move[1]
@@ -161,6 +163,7 @@ class ChineseChess(Game):
         self.turn = 'R' if self.turn=='B' else 'B'
 
         self.__update_hash()
+        return self
 
     def get_side(self, piece):
         if piece is None:
@@ -169,6 +172,20 @@ class ChineseChess(Game):
             return 'R'
         else:
             return 'B'
+
+    def get_red_count(self):
+        count = 0
+        for k,v in self.pos.items():
+            if self.get_side(k)=='R' and (not v is None):
+                count +=1
+        return count
+    def get_black_count(self):
+        count = 0
+        for k,v in self.pos.items():
+            if self.get_side(k)=='B' and (not v is None):
+                count +=1
+        return count
+
 
     # same_side is a helper function that returns true if the piece in pos is on the same side of the current turn. Return false if no piece in pos.
     def same_side(self, pos):
@@ -182,7 +199,7 @@ class ChineseChess(Game):
             return True
         return False
     def is_game_over(self):
-        return (self.pos(self.Pieces.B_GENERAL) is None) or (self.pos(self.Pieces.R_GENERAL) is None)
+        return (self.pos[self.Pieces.B_GENERAL] is None) or (self.pos[self.Pieces.R_GENERAL] is None)
 
     def __possible_soldier_moves(self):
         moves = []
@@ -511,20 +528,62 @@ class ChineseChess(Game):
         moves.extend(self.__possible_general_moves())
         return moves
 
-    # Currently value is a simple function that return 1 (or -1) only if either player has lose. Might come up with a better heuristic.
+    def possible_states(self):
+        moves = self.possible_moves()
+        return [ChineseChess(self).__make_move(move) for move in moves]
+
+    # Currently value return a heuristic value for the 'R' player
     def value(self):
-        if self.pos(self.Pieces.B_GENERAL) is None:
-            return 1 if self.turn=='R' else -1
-        if self.pos(self.Pieces.R_GENERAL) is None:
-            return 1 if self.turn=='B' else -1
-        return 0
+        if self.pos[self.Pieces.B_GENERAL] is None:
+            return 1
+        if self.pos[self.Pieces.R_GENERAL] is None:
+            return -1
+        scores = {self.Pieces.R_GENERAL: 0,
+                   self.Pieces.R_ADVISOR_1: 1,
+                   self.Pieces.R_ADVISOR_2: 1,
+                   self.Pieces.R_ELEPHANT_1: 1,
+                   self.Pieces.R_ELEPHANT_2: 1,
+                   self.Pieces.R_HORSE_1: 6,
+                   self.Pieces.R_HORSE_2: 6,
+                   self.Pieces.R_CHARIOT_1: 8,
+                   self.Pieces.R_CHARIOT_2: 8,
+                   self.Pieces.R_CANNON_1: 7, 
+                   self.Pieces.R_CANNON_2: 7,
+                   self.Pieces.R_SOLDIER_1: 1,
+                   self.Pieces.R_SOLDIER_2: 1,
+                   self.Pieces.R_SOLDIER_3: 1,
+                   self.Pieces.R_SOLDIER_4: 1,
+                   self.Pieces.R_SOLDIER_5: 1,
+                   self.Pieces.B_GENERAL: 0,
+                   self.Pieces.B_ADVISOR_1: -1,
+                   self.Pieces.B_ADVISOR_2: -1,
+                   self.Pieces.B_ELEPHANT_1: -1,
+                   self.Pieces.B_ELEPHANT_2: -1,
+                   self.Pieces.B_HORSE_1: -6,
+                   self.Pieces.B_HORSE_2: -6,
+                   self.Pieces.B_CHARIOT_1: -8,
+                   self.Pieces.B_CHARIOT_2: -8,
+                   self.Pieces.B_CANNON_1: -7,
+                   self.Pieces.B_CANNON_2: -7,
+                   self.Pieces.B_SOLDIER_1: -1,
+                   self.Pieces.B_SOLDIER_2: -1,
+                   self.Pieces.B_SOLDIER_3: -1,
+                   self.Pieces.B_SOLDIER_4: -1,
+                   self.Pieces.B_SOLDIER_5: -1}
+        score = 0
+        for piece in self.pos:
+            if not (self.pos[piece] is None):
+                score += scores[piece]
+        return (score/51.0)
+
+
 
     def __eq__(self, another):
         return isinstance(another,self.__class__) and self.board==another.board
 
     def __update_hash(self):
         h = blake2b()
-        h.update(self.__str__().encode('utf-8'))
+        h.update((self.__str__()+self.turn).encode('utf-8'))
         self.hash = int(h.hexdigest(), 16)
 
     def __hash__(self):
