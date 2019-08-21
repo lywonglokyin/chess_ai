@@ -1,25 +1,37 @@
 import math
 import random
+from multiprocessing import Process, Lock, Array, Manager
+from copy import copy
+import time
 
 class MonteCarlo(object):
+
+    CPU = 4 #indicates the number of process it would split to
+
 
     class Node(object):
         def __init__(self, game):
             self.game = game
-            self.value = 0
-            self.totalgames = 0
             self.childs = []
             
 
 
-    def __init__(self,game, main_player):
+    def __init__(self,game, main_player, manager, value_dict= None, total_dict = None):
         self.tree = self.Node(game) # Holds the root of the tree
         self.main_player = main_player
+        if value_dict is None:
+            self.value = manager.dict({game: 0})
+        else:
+            self.value = manager.dict(value_dict)
+        if total_dict is None:
+            self.totalgames = manager.dict({game:0})
+        else:
+            self.totalgames = manager.dict(total_dict)
 
     def __ucb(self, node):
-        if node.totalgames == 0:
+        if self.totalgames[node.game] == 0:
             return math.inf
-        return math.sqrt(2.0*math.log(self.tree.totalgames)/node.totalgames) + node.value
+        return math.sqrt(2.0*math.log(self.totalgames[self.tree.game])/self.totalgames[node.game]) + self.value[node.game]
 
     def __selectMaxFromList(self, list, func):
         if not list:
@@ -53,30 +65,60 @@ class MonteCarlo(object):
             value = -value
         return value
         
-
-    def train(self, msg=False):
-
-        while True:
-            try:
-                # Selection
-                path = [] # stores the path from root to target
-                target  = self.__selectNode(self.tree, self.__ucb, path)
-
-                # Expansion
-                target.childs = [self.Node(game) for game in target.game.possible_states()]
-
-                # Exploration
-                value = self.__explore(target.game)
-
-            except KeyboardInterrupt:
-                break
-
-            #Back-propagate
-            for node in path:
-                node.value += value
-                node.totalgames += 1
-            if msg:
-                print("Root: {:.4f}/{} Normalized win rate: {:.4f}%".format(self.tree.value, self.tree.totalgames,self.tree.value/self.tree.totalgames*50+50))
+    # A thread safe exploration and back propagation function
+    def explore_and_back_prop(self, target, path, lock, msg):
+        value = self.__explore(target.game)
+        lock.acquire()
+        for node in path:
+            self.value[node.game] += value
+            self.totalgames[node.game] +=1
+        if msg:
+            print("Root: {:.4f}/{} Normalized win rate: {:.4f}%".format(self.value[self.tree.game], self.totalgames[self.tree.game],self.value[self.tree.game]/self.totalgames[self.tree.game]*50+50))
         
-        print("Interrupted, training end!")
-        raise KeyboardInterrupt
+        lock.release()
+
+    def train(self, msg=False, timeout = 300):
+
+        start_time = time.clock()
+
+        while (time.clock()-start_time)<=timeout:
+            # Selection
+            target_path = [] # stores the path from root to target
+            target  = [self.__selectNode(self.tree, self.__ucb, target_path)]
+            paths = [target_path]
+
+            # Expansion
+            target[0].childs = [self.Node(game) for game in target[0].game.possible_states()]
+            for node in target[0].childs:
+                self.totalgames[node.game] = 0
+                self.value[node.game] = 0
+            # To faciliate multi-processing, we further expand the first few node of the child.
+            num = len(target[0].childs) if len(target[0].childs)<self.CPU else self.CPU
+            for i in range(1,num):
+                target.append(target[0].childs[i])
+                new_path = copy(paths[0])
+                new_path.append(target[0].childs[i])
+                paths.append(new_path)
+                target[0].childs[i].childs = [self.Node(game) for game in target[0].childs[i].game.possible_states()]
+                for node in target[0].childs[i].childs:
+                    self.totalgames[node.game] = 0
+                    self.value[node.game] = 0
+
+            ## Exploration (multi-thread)
+            #value = self.__explore(target.game)
+
+            lock = Lock()
+            processes = [Process(target=self.explore_and_back_prop, args=(target[i],paths[i],lock,msg)) for i in range(len(target))]
+            for p in processes:
+                p.start()
+            for p in processes:
+                p.join()
+
+
+        
+        print("Training end!")
+
+    def best_state(self):
+        max_node = self.__selectMaxFromList(self.tree.childs, lambda node: -math.inf if self.totalgames[node.game]==0 else self.value[node.game]/self.totalgames[node.game])
+        print("Best move: {:.4f}/{} Normalized win rate: {:.4f}%".format(self.value[max_node.game], self.totalgames[max_node.game],self.value[max_node.game]/self.totalgames[max_node.game]*50+50))
+        return max_node.game

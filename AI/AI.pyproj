@@ -38,6 +38,9 @@
     <Compile Include="Games\MonteCarlo.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Games\test.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Games\TicTacToe.py">
       <SubType>Code</SubType>
     </Compile>

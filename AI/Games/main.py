@@ -1,6 +1,7 @@
 from Games.Game import Game
 from Games.ChineseChess import ChineseChess
 from Games.MonteCarlo import MonteCarlo
+from multiprocessing import Manager
 
 import random
 import pickle
@@ -10,19 +11,21 @@ def test(list):
 
 def main():
     cc = ChineseChess()
-
+    m = Manager()
     try:
         tree_file = open('tree.data','rb')
-        mcs = pickle.load(tree_file)
+        (game, value, total) = pickle.load(tree_file)
+        mcs = MonteCarlo(game, True, m, value, total)
     except FileNotFoundError:
-        mcs = MonteCarlo(cc, True) 
-    try:
-        mcs.train(True)
-    except KeyboardInterrupt:
-        with open('tree.data', 'wb') as tree_file:
-            pickle.dump(mcs, tree_file)
+        mcs = MonteCarlo(cc, True, m) 
+    
+    mcs.train(True, 30) # Train the model for 30 second
 
+    with open('tree.data', 'wb') as tree_file:
+        package = (mcs.tree.game, mcs.value.copy(), mcs.totalgames.copy())
+        pickle.dump(package, tree_file)
 
+    print(mcs.best_state())
     #with open('test.data', 'wb') as test_file:
     #    pickle.dump(cc, test_file)
     
