@@ -23,14 +23,21 @@ class TicTacToe(Game):
         if (self.board[2]==player and self.board[4]==player and self.board[6]==player): return True
         return False
 
-    def score(self):
-        if self.is_winner('X'):
-            if self.turn('X'):
+    def is_game_over(self):
+        if self.is_winner('X') or self.is_winner('O'):
+            return True
+        if len(self.possible_moves())==0:
+            return True
+        return False
+
+    def value(self):
+        if self.is_winner('O'):
+            if self.turn=='X':
                 return 1
             else:
                 return -1
-        if self.is_winner('O'):
-           if self.turn('O'):
+        if self.is_winner('X'):
+           if self.turn=='O':
                return 1
            else:
               return -1
@@ -40,11 +47,10 @@ class TicTacToe(Game):
         return [i for i in range(9) if self.board[i]==' ']
 
     def possible_states(self):
-        return [make_move(move) for move in self.possible_moves()]
+        return [self.make_move(move) for move in self.possible_moves()]
 
     def make_move(self, move):
         new_state = TicTacToe(self)
-        print(new_state)
         new_state.board[move] = self.turn
         new_state.turn = 'X' if self.turn == 'O' else 'O'
         return new_state

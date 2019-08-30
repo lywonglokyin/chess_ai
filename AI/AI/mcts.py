@@ -46,7 +46,7 @@ class MCTS_trainer:
     def simulate_value(self, game):
         temp = game
         i = 0
-        while not temp.is_game_over() and i<self.depth:
+        while (not temp.is_game_over()) and (i<self.depth):
             i+=1
             temp = random.choice(temp.possible_states())
         value = temp.value()
@@ -76,6 +76,25 @@ class MCTS_trainer:
 
     def __ucb(self, state):
         return math.sqrt(2.0*math.log(self.total_games[self.root])/self.total_games[state]) + self.score[state]/self.total_games[state]
+
+    def best_move(self, state):
+        best_score = -math.inf
+        best_state = None
+        for s in state.possible_states():
+            if self.total_games.get(s,0) ==0:
+                continue
+            else:
+                current_score = self.score[s]/self.total_games[s]
+                if current_score > best_score:
+                    best_state = s
+                    best_score = current_score
+        if best_state is None:
+            print("Node not explored, return random choice.")
+            return random.choice(state.possible_states())
+        else:
+            print("Node: {:.4f}/{} Normalized win rate: {:.4f}%".format(self.score[best_state], self.total_games[best_state],self.score[best_state]/self.total_games[best_state]*50+50))
+            return best_state
+
 
 
 class MCTS:
@@ -127,3 +146,6 @@ class MCTS:
             time: Amount of time in seconds
         """
         self.mcts_trainer.train(time)
+
+    def best_move(self, state):
+        return self.mcts_trainer.best_move(state)

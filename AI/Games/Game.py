@@ -3,7 +3,7 @@ class Game:
     def __init__(self):
         pass
 
-    def score(self):
+    def value(self):
         raise NotImplementedError()
 
     def possible_moves(self):
@@ -12,3 +12,5 @@ class Game:
     def possible_states(self):
         raise NotImplementedError()
 
+    def is_game_over(self):
+        raise NotImplementedError()
