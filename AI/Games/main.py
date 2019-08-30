@@ -15,8 +15,8 @@ def main():
     cc = ChineseChess()
 
     filename = "base_game.mcts"
-    mcts = MCTS.load_file(cc, filename)
-    mcts.train(60)
+    mcts = MCTS.load_file(cc, filename,depth=50, pool_size = 10)
+    mcts.train(60*5)
     mcts.save_file(filename)
 
 

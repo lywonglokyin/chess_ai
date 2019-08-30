@@ -95,7 +95,7 @@ class MCTS:
             self.mcts_trainer = MCTS_trainer(game, depth, manager, pool_size, import_data, text = True)
 
     @staticmethod
-    def load_file(game, filename, text = True):
+    def load_file(game, filename, depth=50, pool_size = 10, text = True):
         """ Load saved statistics and create a MTCS object
         Args:
             filename: Filename to be loaded
@@ -105,9 +105,9 @@ class MCTS:
         try:
             load_file = open(filename,'rb')
             import_data = pickle.load(load_file)
-            mcts = MCTS(game, import_data = import_data, text = text)
+            mcts = MCTS(game, import_data = import_data, depth=depth, pool_size=pool_size, text = text)
         except FileNotFoundError:
-            mcts = MCTS(game, text = text)
+            mcts = MCTS(game,  depth=depth, pool_size=pool_size, text = text)
         return mcts
     
     def save_file(self, filename):
