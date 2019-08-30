@@ -10,14 +10,17 @@ class MonteCarlo(object):
 
 
     class Node(object):
-        def __init__(self, game):
+        def __init__(self, game, my_turn):
             self.game = game
             self.childs = []
-            
+            self.my_turn = my_turn
 
 
-    def __init__(self,game, main_player, manager, value_dict= None, total_dict = None):
-        self.tree = self.Node(game) # Holds the root of the tree
+    def __init__(self,game, main_player, manager, value_dict= None, total_dict = None, tree = None):
+        if tree is None:
+            self.tree = self.Node(game, True) # Holds the root of the tree
+        else:
+            self.tree = tree
         self.main_player = main_player
         if value_dict is None:
             self.value = manager.dict({game: 0})
@@ -33,6 +36,11 @@ class MonteCarlo(object):
             return math.inf
         return math.sqrt(2.0*math.log(self.totalgames[self.tree.game])/self.totalgames[node.game]) + self.value[node.game]
 
+    def __lcb(self, node):
+        if self.totalgames[node.game] == 0:
+            return -math.inf
+        return - math.sqrt(2.0*math.log(self.totalgames[self.tree.game])/self.totalgames[node.game]) + self.value[node.game]
+
     def __selectMaxFromList(self, list, func):
         if not list:
             return None
@@ -45,14 +53,28 @@ class MonteCarlo(object):
                 max = values[i]
         return list[max_i]
 
+    def __selectMinFromList(self, list, func):
+        if not list:
+            return None
+        values = [func(x) for x in list]
+        min = values[0]
+        min_i = 0
+        for i in range(len(values)):
+            if values[i] < min:
+                min_i = i
+                min = values[i]
+        return list[min_i]
 
-    def __selectNode(self, node, func, path):
+
+    def __selectNode(self, node, max_func, min_func, path):
         path.append(node)
+        #!!! THIS IS WRONG, NODE STATE IS NOT THE SAME
         if not node.childs:
             return node
-
-        return self.__selectNode(self.__selectMaxFromList(node.childs,func),func, path)
-    
+        if node.my_turn:
+            return self.__selectNode(self.__selectMaxFromList(node.childs,max_func),max_func, min_func, path)
+        else:
+            return self.__selectNode(self.__selectMinFromList(node.childs, min_func),max_func, min_func, path)
     # __explore will simulate the game randomly, and return the game value (RELATIVE TO NODE PLAYER TURN) when gameover or reaching the required depth.
     def __explore(self, game, depth = 100):
         temp = game
@@ -84,11 +106,11 @@ class MonteCarlo(object):
         while (time.clock()-start_time)<=timeout:
             # Selection
             target_path = [] # stores the path from root to target
-            target  = [self.__selectNode(self.tree, self.__ucb, target_path)]
+            target  = [self.__selectNode(self.tree, self.__ucb, self.__lcb, target_path)]
             paths = [target_path]
 
             # Expansion
-            target[0].childs = [self.Node(game) for game in target[0].game.possible_states()]
+            target[0].childs = [self.Node(game, not target[0].my_turn) for game in target[0].game.possible_states()]
             for node in target[0].childs:
                 self.totalgames[node.game] = 0
                 self.value[node.game] = 0
@@ -99,7 +121,7 @@ class MonteCarlo(object):
                 new_path = copy(paths[0])
                 new_path.append(target[0].childs[i])
                 paths.append(new_path)
-                target[0].childs[i].childs = [self.Node(game) for game in target[0].childs[i].game.possible_states()]
+                target[0].childs[i].childs = [self.Node(game, target[0].my_turn) for game in target[0].childs[i].game.possible_states()]
                 for node in target[0].childs[i].childs:
                     self.totalgames[node.game] = 0
                     self.value[node.game] = 0

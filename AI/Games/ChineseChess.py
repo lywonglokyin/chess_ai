@@ -535,9 +535,9 @@ class ChineseChess(Game):
     # Currently value return a heuristic value for the 'R' player
     def value(self):
         if self.pos[self.Pieces.B_GENERAL] is None:
-            return 1
+            score =  1
         if self.pos[self.Pieces.R_GENERAL] is None:
-            return -1
+            score = -1
         scores = {self.Pieces.R_GENERAL: 0,
                    self.Pieces.R_ADVISOR_1: 1,
                    self.Pieces.R_ADVISOR_2: 1,
@@ -547,8 +547,8 @@ class ChineseChess(Game):
                    self.Pieces.R_HORSE_2: 6,
                    self.Pieces.R_CHARIOT_1: 8,
                    self.Pieces.R_CHARIOT_2: 8,
-                   self.Pieces.R_CANNON_1: 7, 
-                   self.Pieces.R_CANNON_2: 7,
+                   self.Pieces.R_CANNON_1: 6, 
+                   self.Pieces.R_CANNON_2: 6,
                    self.Pieces.R_SOLDIER_1: 1,
                    self.Pieces.R_SOLDIER_2: 1,
                    self.Pieces.R_SOLDIER_3: 1,
@@ -563,8 +563,8 @@ class ChineseChess(Game):
                    self.Pieces.B_HORSE_2: -6,
                    self.Pieces.B_CHARIOT_1: -8,
                    self.Pieces.B_CHARIOT_2: -8,
-                   self.Pieces.B_CANNON_1: -7,
-                   self.Pieces.B_CANNON_2: -7,
+                   self.Pieces.B_CANNON_1: -6,
+                   self.Pieces.B_CANNON_2: -6,
                    self.Pieces.B_SOLDIER_1: -1,
                    self.Pieces.B_SOLDIER_2: -1,
                    self.Pieces.B_SOLDIER_3: -1,
@@ -574,6 +574,8 @@ class ChineseChess(Game):
         for piece in self.pos:
             if not (self.pos[piece] is None):
                 score += scores[piece]
+        if self.turn == 'R':
+            score = -score
         return (score/51.0)
 
 

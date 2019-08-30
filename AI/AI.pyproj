@@ -26,6 +26,9 @@
     <Folder Include="Test\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\mcts.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Games\ChineseChess.py">
       <SubType>Code</SubType>
     </Compile>
