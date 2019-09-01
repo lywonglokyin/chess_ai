@@ -2,7 +2,7 @@ from enum import Enum, auto
 from copy import deepcopy
 from hashlib import blake2b
 
-from Games.Game import Game
+from .Game import Game
 
 class ChineseChess(Game):
 

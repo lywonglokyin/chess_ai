@@ -1,6 +1,6 @@
 import copy
 
-from Games.Game import Game
+from .Game import Game
 
 class TicTacToe(Game):
 

@@ -1,7 +1,6 @@
 from Games.Game import Game
 from Games.ChineseChess import ChineseChess
 from Games.TicTacToe import TicTacToe
-from Games.MonteCarlo import MonteCarlo
 from AI.mcts import MCTS
 from multiprocessing import Manager
 
@@ -30,7 +29,7 @@ def main():
 
     filename = "d100p50.mcts"
     mcts = MCTS.load_file(cc, filename,depth=100, pool_size = 50)
-    mcts.train(60*5)
+    mcts.train(60*2)
     mcts.save_file(filename)
 
 
