@@ -9,9 +9,12 @@
 *.user
 *.userosscache
 *.sln.docstates
-
+*.sln
+*.mcts
+*.pyproj
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+.vscode/
 Test/
 
 # Build results
