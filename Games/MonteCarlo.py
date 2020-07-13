@@ -81,7 +81,7 @@ class MonteCarlo(object):
         i = 0
         while not temp.is_game_over() and i<depth:
             i+=1
-            temp = random.choice(temp.possible_states())
+            temp = random.choice(temp.possible_states)
         value = temp.value()
         if not self.main_player:
             value = -value
@@ -110,7 +110,7 @@ class MonteCarlo(object):
             paths = [target_path]
 
             # Expansion
-            target[0].childs = [self.Node(game, not target[0].my_turn) for game in target[0].game.possible_states()]
+            target[0].childs = [self.Node(game, not target[0].my_turn) for game in target[0].game.possible_states]
             for node in target[0].childs:
                 self.totalgames[node.game] = 0
                 self.value[node.game] = 0
@@ -121,7 +121,7 @@ class MonteCarlo(object):
                 new_path = copy(paths[0])
                 new_path.append(target[0].childs[i])
                 paths.append(new_path)
-                target[0].childs[i].childs = [self.Node(game, target[0].my_turn) for game in target[0].childs[i].game.possible_states()]
+                target[0].childs[i].childs = [self.Node(game, target[0].my_turn) for game in target[0].childs[i].game.possible_states]
                 for node in target[0].childs[i].childs:
                     self.totalgames[node.game] = 0
                     self.value[node.game] = 0

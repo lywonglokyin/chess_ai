@@ -39,7 +39,7 @@ class MCTS_trainer:
             self.update_dict(game, sum(values), self.pool_size)
             return sum(values)
         else:
-            value = - self.__train_recursive(self.__max_ucb(game.possible_states()))
+            value = - self.__train_recursive(self.__max_ucb(game.possible_states))
             self.update_dict(game, value, self.pool_size)
             return value
 
@@ -48,7 +48,7 @@ class MCTS_trainer:
         i = 0
         while (not temp.is_game_over()) and (i<self.depth):
             i+=1
-            temp = random.choice(temp.possible_states())
+            temp = random.choice(temp.possible_states)
         value = temp.value()
         if i%2==1:
             value = -value
@@ -80,7 +80,7 @@ class MCTS_trainer:
     def best_move(self, state):
         best_score = -math.inf
         best_state = None
-        for s in state.possible_states():
+        for s in state.possible_states:
             if self.total_games.get(s,0) ==0:
                 continue
             else:
@@ -90,7 +90,7 @@ class MCTS_trainer:
                     best_score = current_score
         if best_state is None:
             print("Node not explored, return random choice.")
-            return random.choice(state.possible_states())
+            return random.choice(state.possible_states)
         else:
             print("Node: {:.4f}/{} Normalized win rate: {:.4f}%".format(self.score[best_state], self.total_games[best_state],self.score[best_state]/self.total_games[best_state]*50+50))
             return best_state

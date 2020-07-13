@@ -1,4 +1,5 @@
 import copy
+import functools
 
 from Games.Game import Game
 
@@ -79,6 +80,8 @@ class AdvancedTicTacToe(Game):
             _, last_pos = self.last_move
             return [(last_pos, j) for j in range(9) if self.board[last_pos][j]==' ']
 
+    @property
+    @functools.lru_cache()
     def possible_states(self):
         return [self.make_move(move) for move in self.possible_moves()]
 

@@ -2,6 +2,7 @@ from Games.Game import Game
 from Games.ChineseChess import ChineseChess
 from Games.TicTacToe import TicTacToe
 from Games.MonteCarlo import MonteCarlo
+from Games.AdvancedTicTacToe import AdvancedTicTacToe
 from AI.mcts import MCTS
 from multiprocessing import Manager
 
@@ -13,16 +14,22 @@ def test(list):
 
 def main():
 
-    ttt = TicTacToe()
-    filename = "ttt.mcts"
-    mcts = MCTS.load_file(ttt, filename,depth=50, pool_size = 20)
-    mcts.train(60)
-    print(ttt)
-    while not ttt.is_game_over():
-       ttt =mcts.best_move(ttt)
-       print(ttt)
-       print('\n')
+    attt = AdvancedTicTacToe()
+    filename = "attt.mcts"
+    mcts = MCTS.load_file(attt, filename,depth=50, pool_size = 24)
+    mcts.train(20*60)
+    print(attt)
+    while not attt.is_game_over():
+        attt =mcts.best_move(attt)
+        print(attt)
+        print('\n')
     mcts.save_file(filename)
+    if attt.is_winner('O'):
+        print("O wins!")
+    elif attt.is_winner('X'):
+        print("X wins!")
+    else:
+        print("Draw!")
 
     # load_file = open(filename,'rb')
     

@@ -1,4 +1,5 @@
 import copy
+import functools
 
 from Games.Game import Game
 
@@ -46,6 +47,8 @@ class TicTacToe(Game):
     def possible_moves(self):
         return [i for i in range(9) if self.board[i]==' ']
 
+    @property
+    @functools.lru_cache()
     def possible_states(self):
         return [self.make_move(move) for move in self.possible_moves()]
 

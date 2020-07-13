@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from copy import deepcopy
 from hashlib import blake2b
+import functools
 
 from Games.Game import Game
 
@@ -528,6 +529,9 @@ class ChineseChess(Game):
         moves.extend(self.__possible_general_moves())
         return moves
 
+
+    @property
+    @functools.lru_cache()
     def possible_states(self):
         moves = self.possible_moves()
         return [ChineseChess(self).__make_move(move) for move in moves]
