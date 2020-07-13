@@ -24,9 +24,9 @@ class MCTS_trainer:
         self.score[game] = self.score.get(game,0) + value
 
     def train(self, run_time):
-        start_time = time.clock()
+        start_time = time.time()
 
-        while (time.clock()-start_time)<=run_time:
+        while (time.time()-start_time)<=run_time:
             self.__train_recursive(self.root)
             if self.text:
                 print("Root: {:.4f}/{} Normalized win rate: {:.4f}%".format(self.score[self.root], self.total_games[self.root],self.score[self.root]/self.total_games[self.root]*50+50))
